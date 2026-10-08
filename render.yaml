@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: sahifa-quiz
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: TARGET_CHANNEL_ID
+        sync: false
+      - key: WEBHOOK_URL
+        sync: false
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: APP_NAME
+        value: Sahifa Quiz
+      - key: TOP_LIMIT
+        value: "10"
+      - key: POINTS_PER_CORRECT
+        value: "10"
+      - key: MAX_QUESTIONS_PER_IMPORT
+        value: "100"
+      - key: DEFAULT_QUIZ_QUESTIONS
+        value: "10"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sahifa-quiz-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: sahifa-quiz-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: sahifa-quiz-redis
+    plan: free
+    region: frankfurt
+
+databases:
+  - name: sahifa-quiz-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "16"
